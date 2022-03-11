@@ -4,14 +4,37 @@ import { DEFAULT_CHAIN_ID } from "./constants/default"
 import { getRpcEngine } from "./engines"
 import { IAppState } from "./helpers/types"
 
-async function main() {
-  const uri = "wc:64c54d01-5578-4dc4-8c8f-4cd6219e12d4@1?bridge=https%3A%2F%2Ft.bridge.walletconnect.org&key=cb2d677406daaac69ef9a185f568471878b5ae59d80fc0cb095278eb387f4922"
+import express from "express"
+
+const app = express()
+
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
+
+app.get('/', (req, res) => {
+  res.send('hello world')
+})
+app.post('/init', async (req, res) => {
+  const uri = req.body.uri
+  console.log(req.body)
   const connector = new WalletConnect({ uri })
   if (!connector.connected) {
     await connector.createSession()
   }
+  InitState.connector = connector;
   await subscribeToEvents(connector)
-}
+  res.send('done')
+})
+
+
+// async function main() {
+//   const uri = "wc:64c54d01-5578-4dc4-8c8f-4cd6219e12d4@1?bridge=https%3A%2F%2Ft.bridge.walletconnect.org&key=cb2d677406daaac69ef9a185f568471878b5ae59d80fc0cb095278eb387f4922"
+//   const connector = new WalletConnect({ uri })
+//   if (!connector.connected) {
+//     await connector.createSession()
+//   }
+//   await subscribeToEvents(connector)
+// }
 
 const InitState: IAppState = {
   loading: false,
@@ -104,4 +127,7 @@ const subscribeToEvents = async (connector: WalletConnect) => {
   // }
 }
 
-main()
+// main()
+app.listen(3003, () => {
+  console.log('listening on port 3003')
+})
