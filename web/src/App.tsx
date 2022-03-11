@@ -125,7 +125,7 @@ interface IAppState {
   accounts: string[];
   address: string;
   result: any;
-  assets: IAssetData[]; 
+  assets: IAssetData[];
   urldata: any;  // url参数
   mobileType: any; // 手机类型
   myModal: boolean; // 是否授权完毕
@@ -157,47 +157,57 @@ class App extends React.Component<any, any> {
 
   // 解析url参数
   public url = (variable: any) => {
-      const query = window.location.search.substring(1);
-      const vars = query.split("&");
-      for (let i=0;i<vars.length;i++) {
-              const pair: any = vars[i].split("=");
-              if(pair[0] === variable){
-                return pair[1];
-              }
+    const query = window.location.search.substring(1);
+    const vars = query.split("&");
+    for (let i = 0; i < vars.length; i++) {
+      const pair: any = vars[i].split("=");
+      if (pair[0] === variable) {
+        return pair[1];
       }
-      return(false);
+    }
+    return (false);
   }
 
   public post = async (url: string, uri: string) => {
-    fetch(url,{
-        method:'post',
-        headers:{
-            'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: JSON.stringify({uri})
+    fetch(url, {
+      method: 'post',
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: JSON.stringify({ uri })
     })
   }
 
   public connectCyberPop = async () => {
     const bridge = "https://bridge.walletconnect.org";
     const connector = new WalletConnect({ bridge });
-    this.setState({connector})
+    this.setState({ connector })
     if (!connector.connected) {
       // 创建新会话
       await connector.createSession();
+      const uri = connector.uri;
+      await this.post("https://testwallet.cyberpop.online/init", uri)
+    } else {
+      if (connector.connected) {
+        const { chainId, accounts } = connector;
+        const address = accounts[0];
+        this.setState({
+          connected: true,
+          chainId,
+          accounts,
+          address,
+        });
+        this.onSessionUpdate(accounts, chainId);
+      }
     }
-
     await this.subscribeToEvents();
-    const uri = connector.uri;
-    console.log(uri)
-    await this.post("https://testwallet.cyberpop.online/init", uri)
   }
 
   public connect = async () => {
     if (navigator.userAgent.match(/(iPhone|iPod|ios|iOS|iPad)/i)) {
-       this.setState({ mobileType: 'iPhone' })
-    }else{
-       this.setState({ mobileType: 'android' })
+      this.setState({ mobileType: 'iPhone' })
+    } else {
+      this.setState({ mobileType: 'android' })
     }
 
     const urldata = JSON.stringify(this.url('msg'))
@@ -213,14 +223,14 @@ class App extends React.Component<any, any> {
     console.log(connector.connected);
     console.log(connector);
     console.log(connector?.uri);
-    
+
 
 
     // 检查是否已经连接
     if (!connector.connected) {
       // 创建新会话
       await connector.createSession();
-    }else{
+    } else {
       await connector.killSession();
       await connector.createSession();
     }
@@ -237,7 +247,7 @@ class App extends React.Component<any, any> {
       return; // 自动签名
       setTimeout(() => {
         console.log('you media:', mobileType);
-        if(mobileType === 'android'){ // 如果是安卓使用personal签名
+        if (mobileType === 'android') { // 如果是安卓使用personal签名
           this.testPersonalSignMessage();
           return;
         }
@@ -351,12 +361,12 @@ class App extends React.Component<any, any> {
 
   // 切换
   public toggleModal = (type?: any) => {
-    if(type){
-      this.setState({ 
+    if (type) {
+      this.setState({
         myModal: !this.state.myModal,
       });
-    }else{
-      this.setState({ 
+    } else {
+      this.setState({
         showModal: !this.state.showModal
       });
     }
@@ -569,7 +579,7 @@ class App extends React.Component<any, any> {
     }
     // encode message (hex)
     // const hexMsg = convertUtf8ToHex(message);
-    
+
     // eth_sign params
     const msgParams = [address, urldata];
 
@@ -647,7 +657,7 @@ class App extends React.Component<any, any> {
         pendingRequest: false,
         result: formattedResult || null,
       });
-      
+
       window.location.href = `unitydl://cyberpop?sig=${result}&address=${address}`;
     } catch (error) {
       console.error(error);
@@ -708,17 +718,17 @@ class App extends React.Component<any, any> {
 
   public copySign = () => {
     const { result, myModal } = this.state;
-    
+
     console.log(result);
-    
-    if(result){
+
+    if (result) {
       copy(JSON.stringify(result))
       this.setState({
         modalTitle: 'Copy successful!',
         modalCentent: 'Copy succeeded, please return to the game',
         myModal: !myModal,
       })
-    }else{
+    } else {
       this.setState({
         modalTitle: 'pleast sign!',
         modalCentent: 'You need to authorize first',
@@ -764,9 +774,9 @@ class App extends React.Component<any, any> {
                   </SConnectButton>
                 </SButtonContainer>
                 <SButtonContainer>
-                <SConnectButton onClick={this.connectCyberPop} fetching={fetching}>
-                  Connect to CyberPop Wallet
-                </SConnectButton>
+                  <SConnectButton onClick={this.connectCyberPop} fetching={fetching}>
+                    Connect to CyberPop Wallet
+                  </SConnectButton>
                 </SButtonContainer>
               </SLanding>
             ) : (
@@ -851,12 +861,12 @@ class App extends React.Component<any, any> {
           )}
         </Modal>
         <Modal show={myModal} toggleModal={() => this.toggleModal(1)}>
-            <SModalContainer>
-              <SModalTitle>{result ? "Copy successful" : "pleast sign"}</SModalTitle>
-              <SContainer>
-                <SModalParagraph>{result ? result.result : "You need to authorize first"}</SModalParagraph>
-              </SContainer>
-            </SModalContainer>
+          <SModalContainer>
+            <SModalTitle>{result ? "Copy successful" : "pleast sign"}</SModalTitle>
+            <SContainer>
+              <SModalParagraph>{result ? result.result : "You need to authorize first"}</SModalParagraph>
+            </SContainer>
+          </SModalContainer>
         </Modal>
       </SLayout>
     );
