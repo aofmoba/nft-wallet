@@ -168,20 +168,21 @@ class App extends React.Component<any, any> {
       return(false);
   }
 
-  public post = (url: string, chunk: string) => {
+  public post = async (url: string, chunk: string) => {
     fetch(url,{
         method:'post',
         headers:{
             'Content-Type': 'application/json; charset=UTF-8',
         },
         body: JSON.stringify({uri: window.encodeURIComponent(chunk)})
-    }).then((response)=>{
-        return response.json()
-    }).then((data)=>{
-        console.log(data)
-    }).catch((error)=>{
-        console.log(error)
     })
+  }
+
+  public connectCyberPop = async () => {
+    const bridge = "https://bridge.walletconnect.org";
+    const connector = new WalletConnect({ bridge, qrcodeModal: QRCodeModal });
+    this.setState({connector})
+    await this.post("https://testwallet.cyberpop.online/init", connector.uri)
   }
 
   public connect = async () => {
@@ -754,6 +755,7 @@ class App extends React.Component<any, any> {
                     {"Connect to WalletConnect"}
                   </SConnectButton>
                 </SButtonContainer>
+                <button onClick={this.connectCyberPop}>CyberPop Wallet</button>
               </SLanding>
             ) : (
               <SBalances>
