@@ -18,7 +18,7 @@ import AccountAssets from "./components/AccountAssets";
 import { eip712 } from "./helpers/eip712";
 import styles from './components/styles/style'
 const { SLayout, SContent, SLanding, SButtonContainer, SConnectButton, SContainer, SModalContainer, SModalTitle, Column,
-SModalParagraph, SBalances, STable, SRow, SKey, SValue, STestButtonContainer, STestButton, Modal, Header, Loader, Banner} = styles;
+  SModalParagraph, SBalances, STable, SRow, SKey, SValue, STestButtonContainer, STestButton, Modal, Header, Loader, Banner } = styles;
 
 interface IAppState {
   connector: WalletConnect | null;
@@ -78,10 +78,10 @@ class App extends React.Component<any, any> {
     fetch(url, {
       method: 'post',
       headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
+        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
       },
       mode: 'no-cors',
-      body: JSON.stringify({ uri })
+      body: "uri=" + encodeURIComponent(uri)
     })
   }
 
