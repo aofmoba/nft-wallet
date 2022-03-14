@@ -5,10 +5,6 @@ import copy from "copy-to-clipboard";
 // import WalletConnectProvider from "@walletconnect/web3-provider"; // 加入我们自己的infuraId
 // import { convertUtf8ToHex } from "@walletconnect/utils";
 import { IInternalEvent } from "@walletconnect/types";
-import Column from "./components/Column";
-import Modal from "./components/Modal";
-import Header from "./components/Header";
-import Loader from "./components/Loader";
 import { apiGetAccountAssets, apiGetGasPrices, apiGetAccountNonce } from "./helpers/api"; // 操作方法
 import {
   sanitizeHex,
@@ -18,13 +14,11 @@ import {
 } from "./helpers/utilities";
 import { convertAmountToRawNumber, convertStringToHex } from "./helpers/bignumber";
 import { IAssetData } from "./helpers/types";
-import Banner from "./components/Banner";
 import AccountAssets from "./components/AccountAssets";
 import { eip712 } from "./helpers/eip712";
-import haha from './components/styles/style'
-const { SLayout, SContent, SLanding, SButtonContainer, SConnectButton, SContainer, SModalContainer, SModalTitle,
-   SModalParagraph, SBalances, STable, SRow, SKey, SValue, STestButtonContainer,  STestButton} = haha;
-console.log(SLayout);
+import styles from './components/styles/style'
+const { SLayout, SContent, SLanding, SButtonContainer, SConnectButton, SContainer, SModalContainer, SModalTitle, Column,
+SModalParagraph, SBalances, STable, SRow, SKey, SValue, STestButtonContainer, STestButton, Modal, Header, Loader, Banner} = styles;
 
 interface IAppState {
   connector: WalletConnect | null;

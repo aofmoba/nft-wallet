@@ -3,6 +3,10 @@ import styled from "styled-components";
 import Button from "../../components/Button";
 import Column from "../../components/Column";
 import Wrapper from "../../components/Wrapper";
+import Modal from "../../components/Modal";
+import Header from "../../components/Header";
+import Loader from "../../components/Loader";
+import Banner from "../../components/Banner";
 import { fonts } from "../../styles"; // fonts
 
 const SLayout = styled.div`
@@ -110,5 +114,10 @@ export default {
     STestButton,
     SLanding,
     SContainer,
-    SBalances
+    SBalances,
+    Modal,
+    Header,
+    Loader,
+    Banner,
+    Column
 }
