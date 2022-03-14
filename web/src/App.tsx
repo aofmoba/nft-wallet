@@ -80,6 +80,7 @@ class App extends React.Component<any, any> {
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
       },
+      mode: 'no-cors',
       body: JSON.stringify({ uri })
     })
   }
@@ -88,11 +89,13 @@ class App extends React.Component<any, any> {
     const bridge = "https://bridge.walletconnect.org";
     const connector = new WalletConnect({ bridge });
     this.setState({ connector })
+    console.log('当前session链接状态：', connector.connected);
     if (!connector.connected) {
       // 创建新会话
       await connector.createSession();
       const uri = connector.uri;
-      await this.post("https://testwallet.cyberpop.online/init", uri)
+      // await this.post("https://testwallet.cyberpop.online/init", uri)  // 创建seesion，然后node端自动连接这个会话
+      await this.post("http://127.0.0.1:3003/init", uri)
     } else {
       if (connector.connected) {
         const { chainId, accounts } = connector;
@@ -106,7 +109,7 @@ class App extends React.Component<any, any> {
         this.onSessionUpdate(accounts, chainId);
       }
     }
-    await this.subscribeToEvents();
+    // await this.subscribeToEvents();
   }
 
   public connect = async () => {
@@ -127,11 +130,6 @@ class App extends React.Component<any, any> {
 
     // console.log(killSession);
     console.log(connector.connected);
-    console.log(connector);
-    console.log(connector?.uri);
-
-
-
     // 检查是否已经连接
     if (!connector.connected) {
       // 创建新会话
