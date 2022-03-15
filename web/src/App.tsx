@@ -36,6 +36,8 @@ interface IAppState {
   mobileType: any; // 手机类型
   myModal: boolean; // 是否授权完毕
   modalTitle: string;// 弹窗提示title
+  modalCentent: string;
+  accountsInfo: any;
 }
 
 const INITIAL_STATE: IAppState = {
@@ -54,6 +56,8 @@ const INITIAL_STATE: IAppState = {
   mobileType: '', // 默认安卓机型
   myModal: false,
   modalTitle: "",
+  modalCentent: "",
+  accountsInfo: "", // 账户信息
 };
 
 class App extends React.Component<any, any> {
@@ -95,7 +99,7 @@ class App extends React.Component<any, any> {
       await connector.createSession();
       const uri = connector.uri;
       // await this.post("https://testwallet.cyberpop.online/init", uri)  // 创建seesion，然后node端自动连接这个会话
-      await this.post("http://127.0.0.1:3003/init", uri)
+      await this.post("http://127.0.0.1:3004/init", uri)
     } else {
       if (connector.connected) {
         const { chainId, accounts } = connector;
@@ -109,7 +113,7 @@ class App extends React.Component<any, any> {
         this.onSessionUpdate(accounts, chainId);
       }
     }
-    // await this.subscribeToEvents();
+    await this.subscribeToEvents();
   }
 
   public connect = async () => {
@@ -620,13 +624,10 @@ class App extends React.Component<any, any> {
     window.location.href = `unitydl://cyberpop?sig=${result.result}&address=${result.address}`;
   }
 
-  public copySign = () => {
-    const { result, myModal } = this.state;
-
-    console.log(result);
-
-    if (result) {
-      copy(JSON.stringify(result))
+  public copySign = (text: any) => {
+    const { myModal } = this.state;
+    if (text) {
+      copy(JSON.stringify(text))
       this.setState({
         modalTitle: 'Copy successful!',
         modalCentent: 'Copy succeeded, please return to the game',
@@ -639,7 +640,18 @@ class App extends React.Component<any, any> {
         myModal: !myModal,
       })
     }
+  }
 
+  public exportKey = () => {
+    const { myModal } = this.state;
+    let accountsInfo: any = localStorage.getItem('walletconnect')
+    accountsInfo = JSON.parse(accountsInfo)
+    this.setState({
+      modalTitle: 'this is your accounts key!',
+      modalCentent: 'please save the key!',
+      myModal: !myModal,
+      accountsInfo,
+    })
   }
 
   public render = () => {
@@ -654,6 +666,9 @@ class App extends React.Component<any, any> {
       result,
       myModal,
       mobileType,
+      modalCentent,
+      modalTitle,
+      accountsInfo,
     } = this.state;
     return (
       <SLayout>
@@ -718,8 +733,11 @@ class App extends React.Component<any, any> {
                     <STestButton left onClick={this.backGame}>
                       {"back game (安卓手机)"}
                     </STestButton>
-                    <STestButton left onClick={this.copySign}>
+                    <STestButton left onClick={() => this.copySign(result)}>
                       {" copy "}
+                    </STestButton>
+                    <STestButton left onClick={this.exportKey}>
+                      {" export key "}
                     </STestButton>
                   </STestButtonContainer>
                 </Column>
@@ -766,9 +784,13 @@ class App extends React.Component<any, any> {
         </Modal>
         <Modal show={myModal} toggleModal={() => this.toggleModal(1)}>
           <SModalContainer>
-            <SModalTitle>{result ? "Copy successful" : "pleast sign"}</SModalTitle>
+            <SModalTitle>{ modalTitle }</SModalTitle>
             <SContainer>
-              <SModalParagraph>{result ? result.result : "You need to authorize first"}</SModalParagraph>
+              <SModalParagraph>{ modalCentent }</SModalParagraph>
+              <SModalParagraph>{ accountsInfo.key }</SModalParagraph>
+              <STestButton left onClick={() => this.copySign(accountsInfo.key)}>
+                  {" copy "}
+              </STestButton>
             </SContainer>
           </SModalContainer>
         </Modal>

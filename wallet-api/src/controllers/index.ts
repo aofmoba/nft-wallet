@@ -20,5 +20,5 @@ export function getAppControllers(): IAppControllers {
   if (!_controllers) {
     _controllers = setupAppControllers();
   }
-  return _controllers;
+  return _controllers;  // 返回控制器
 }

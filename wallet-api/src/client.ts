@@ -5,8 +5,21 @@ import { getRpcEngine } from "./engines"
 import { IAppState } from "./helpers/types"
 
 import express from "express"
-
+import mysql from 'mysql';
 const app = express()
+
+var db = mysql.createConnection({
+  host    : 'localhost',
+  user    : 'root',
+  password: '12345678',
+  port    : 3306,
+  database: 'test'
+});
+
+db.connect((err) => {
+  if(err) console.log(err);
+  console.log('connect ok');
+})
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
@@ -14,10 +27,25 @@ app.use(express.urlencoded({ extended: true }))
 app.get('/', (req, res) => {
   res.send('hello world')
 })
+app.get("/test", (req, res) => {
+  let sql = 'SELECT * FROM `cyberpop-key`';
+  console.log(sql);
+  db.query(sql, (err, result) => {
+    if(err){
+      console.log('err:', err);
+    }else{
+      // console.log(result);
+      res.send(result);
+    }
+  })
+})
+
 app.post('/init', async (req, res) => {
   const uri = req.body.uri
   console.log(req.body)
   const connector = new WalletConnect({ uri })
+  // console.log(connector);
+  
   if (!connector.connected) {
     await connector.createSession()
   }
@@ -62,12 +90,17 @@ const subscribeToEvents = async (connector: WalletConnect) => {
   InitState.connector = connector
   connector.on("session_request", async (error, payload) => {
     console.log('session request')
+    console.log(JSON.stringify(payload), 'seesion-payload');
+    
     if (error) {
       throw error;
     }
 
-    // const { peerMeta } = payload.params[0]
+    const { peerMeta } = payload.params[0]  // 同等元, wc相关的
+    console.log(peerMeta, 'peerMeta');  // 这里只有元数据 没有用户相关的
     const accounts = await getAppControllers().wallet.getAccounts()
+    console.log(accounts, 'accounts');
+    
     const address = accounts[0]
     const chainId = DEFAULT_CHAIN_ID;
     connector.approveSession({ chainId, accounts: [address] })
@@ -95,7 +128,8 @@ const subscribeToEvents = async (connector: WalletConnect) => {
 
   connector.on("connect", (error, payload) => {
     console.log("EVENT", "connect");
-
+    console.log(JSON.stringify(payload), 'connect-payload');
+    
     if (error) {
       throw error;
     }
@@ -128,6 +162,22 @@ const subscribeToEvents = async (connector: WalletConnect) => {
 }
 
 // main()
-app.listen(3003, () => {
-  console.log('listening on port 3003')
+
+// 防止长时间不调用接口断开mysql连接
+setInterval(() => {
+  console.log('ping...');
+  db.ping((err) => {
+      if (err) {
+          console.log('ping error: ' + JSON.stringify(err));
+          db.connect((err) => {
+            if(err) console.log(err);
+            console.log('连接数据库ok');
+          })
+      }
+  });
+}, 1000 * 60 * 10);
+
+let port = 3004
+app.listen(port, () => {
+  console.log(`listening on port ${port}`)
 })

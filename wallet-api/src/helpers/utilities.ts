@@ -111,8 +111,9 @@ export function getChainData(chainId: number): IChainData {
     throw new Error("ChainId missing or not supported");
   }
 
-  const API_KEY = process.env.REACT_APP_INFURA_PROJECT_ID;
-
+  const API_KEY = process.env.REACT_APP_INFURA_PROJECT_ID || '079f44cd40cf4b2196f1751b20c24d30'; // 因为 undefined 所以直接写死 
+  console.log(API_KEY, 'API_KEY'); 
+  
   if (!API_KEY) {
     throw new Error("Environment variable REACT_APP_INFURA_PROJECT_ID is not set");
   }
