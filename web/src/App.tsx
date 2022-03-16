@@ -78,7 +78,7 @@ class App extends React.Component<any, any> {
     return (false);
   }
 
-  public post = async (url: string, uri: string) => {
+  public post = (url: string, uri: string) => {
     return new Promise((resolve, reject) => {
       fetch(url, {
           method: 'post',
@@ -87,9 +87,6 @@ class App extends React.Component<any, any> {
           },
           mode: 'no-cors',
           body: "uri=" + encodeURIComponent(uri)
-      })
-      .then(async (response) => {
-         await response.json();
       })
       .then(data => {
          console.log('data', data);
@@ -655,8 +652,28 @@ class App extends React.Component<any, any> {
 
   public exportKey = async () => {
     const { myModal, uri } = this.state;
-    const key = await this.post('http://127.0.0.1:3004/getPrivate', uri)
-    console.log(key, 'key');
+    // const key: any = await this.post('http://127.0.0.1:3004/getPrivate', uri);
+    const result: any = await fetch('http://127.0.0.1:3004/getPrivate', {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+        },
+        mode: 'no-cors',
+        body: "uri=" + encodeURIComponent(uri)
+    })
+    .then(data => {
+      console.log('data', data);
+      return data;
+    })
+    .catch(err => {
+      console.log();
+    })
+
+    const temp = await result.json();
+    console.log(temp);
+    
+    // const result = await key.json();
+    // console.log(result);
     this.setState({
       modalTitle: 'this is your accounts key!',
       modalCentent: 'please save the key!',
