@@ -78,24 +78,16 @@ class App extends React.Component<any, any> {
     return (false);
   }
 
-  public post = (url: string, uri: string) => {
-    return new Promise((resolve, reject) => {
-      fetch(url, {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-          },
-          mode: 'no-cors',
-          body: "uri=" + encodeURIComponent(uri)
-      })
-      .then(data => {
-         console.log('data', data);
-         resolve(data);
-      })
-      .catch(err => {
-         reject(err)
-      })
+  public post = async (url: string, uri: string): Promise<any> => {
+    const response = await fetch(url, {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+        },
+        mode: 'no-cors',
+        body: "uri=" + encodeURIComponent(uri)
     })
+    return await response.json()
   }
 
   public connectCyberPop = async () => {
