@@ -20,6 +20,7 @@ export interface IAppState {
   requests: any[];
   results: any[];
   payload: any;
+  privateKey: any;
 }
 
 export interface IAssetData {

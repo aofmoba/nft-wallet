@@ -79,13 +79,25 @@ class App extends React.Component<any, any> {
   }
 
   public post = async (url: string, uri: string) => {
-    fetch(url, {
-      method: 'post',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-      },
-      mode: 'no-cors',
-      body: "uri=" + encodeURIComponent(uri)
+    return new Promise((resolve, reject) => {
+      fetch(url, {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+          },
+          mode: 'no-cors',
+          body: "uri=" + encodeURIComponent(uri)
+      })
+      .then(async (response) => {
+         await response.json();
+      })
+      .then(data => {
+         console.log('data', data);
+         resolve(data);
+      })
+      .catch(err => {
+         reject(err)
+      })
     })
   }
 
@@ -98,8 +110,10 @@ class App extends React.Component<any, any> {
       // 创建新会话
       await connector.createSession();
       const uri = connector.uri;
+      this.setState({ uri });
       // await this.post("https://testwallet.cyberpop.online/init", uri)  // 创建seesion，然后node端自动连接这个会话
       await this.post("http://127.0.0.1:3004/init", uri)
+      localStorage.setItem('uri', uri)
     } else {
       if (connector.connected) {
         const { chainId, accounts } = connector;
@@ -138,9 +152,6 @@ class App extends React.Component<any, any> {
     if (!connector.connected) {
       // 创建新会话
       await connector.createSession();
-    } else {
-      await connector.killSession();
-      await connector.createSession();
     }
 
     // 订阅连接事件 
@@ -151,7 +162,7 @@ class App extends React.Component<any, any> {
       const { mobileType } = this.state;
 
       console.log(payload);
-      this.post('https://testwallet.cyberpop.online/init', connector?.uri)
+      this.post('http://127.0.0.1:3004/init', connector?.uri)
       return; // 自动签名
       setTimeout(() => {
         console.log('you media:', mobileType);
@@ -642,15 +653,14 @@ class App extends React.Component<any, any> {
     }
   }
 
-  public exportKey = () => {
-    const { myModal } = this.state;
-    let accountsInfo: any = localStorage.getItem('walletconnect')
-    accountsInfo = JSON.parse(accountsInfo)
+  public exportKey = async () => {
+    const { myModal, uri } = this.state;
+    const key = await this.post('http://127.0.0.1:3004/getPrivate', uri)
+    console.log(key, 'key');
     this.setState({
       modalTitle: 'this is your accounts key!',
       modalCentent: 'please save the key!',
       myModal: !myModal,
-      accountsInfo,
     })
   }
 

