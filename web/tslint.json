@@ -2,6 +2,7 @@
   "extends": ["tslint:recommended", "tslint-react", "tslint-config-prettier"],
   "rules": {
     "prefer-for-of": false,
+    "prefer-const": false,
     "no-shadowed-variable": false,
     "no-bitwise": false,
     "variable-name": false,

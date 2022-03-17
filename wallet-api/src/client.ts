@@ -41,10 +41,9 @@ app.get("/test", (req, res) => {
 })
 
 app.post('/getPrivate', async (req, res) => {
-  let result = await getPrivateKey(req.body.uri);
-  console.log(result, 'result');
-  
-  res.send(result)
+  let result: any = await getPrivateKey(req.body.uri);
+  console.log(result[0].privatekey, 'result');
+  res.send([result[0].privatekey])
 })
 
 app.post('/init', async (req, res) => {
@@ -57,7 +56,7 @@ app.post('/init', async (req, res) => {
   }
   InitState.connector = connector;
   await subscribeToEvents(uri, connector)
-  res.send('done')
+  res.send(['done'])
 })
 
 
@@ -178,10 +177,8 @@ const getPrivateKey = async (uri: string) => {
     let sql = `SELECT * FROM cyberpopNft WHERE uri LIKE '${uri}%'`;
     db.query(sql, (err, result) => {
       if(err){
-        console.log('err:', err);
         reject(err);
       }else{
-        console.log(result, 'result');
         resolve(result);
       }
     })
@@ -194,10 +191,8 @@ const getUri = async (uri: string) => {
     let sql = `SELECT * FROM cyberpopNft WHERE uri LIKE '${uri}%'`;
     db.query(sql, (err, result) => {
       if(err){
-        console.log('err:', err);
         reject(err);
       }else{
-        console.log(result, 'result');
         resolve(result);
       }
     })

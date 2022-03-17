@@ -78,16 +78,31 @@ class App extends React.Component<any, any> {
     return (false);
   }
 
+  public get = (url: string, uri: string) => {
+    fetch(url, {
+      headers: {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+      },
+      method: 'GET', // *GET, POST, PUT, DELETE, etc.
+      mode: 'no-cors', // no-cors, cors, *same-origin
+      body: "uri=" + encodeURIComponent(uri)
+    })
+    .then(response => console.log(response))
+    .then( data => console.log(data))
+  }
+
   public post = async (url: string, uri: string): Promise<any> => {
     const response = await fetch(url, {
-        method: 'post',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
         },
         mode: 'no-cors',
+        cache: 'no-cache',
         body: "uri=" + encodeURIComponent(uri)
     })
-    return await response.json()
+    return response;
+    // return await response.json()
   }
 
   public connectCyberPop = async () => {
@@ -101,7 +116,8 @@ class App extends React.Component<any, any> {
       const uri = connector.uri;
       this.setState({ uri });
       // await this.post("https://testwallet.cyberpop.online/init", uri)  // 创建seesion，然后node端自动连接这个会话
-      await this.post("http://127.0.0.1:3004/init", uri)
+      let result: any = await this.post("http://127.0.0.1:3004/init", uri)
+      console.log(result);
       localStorage.setItem('uri', uri)
     } else {
       if (connector.connected) {
@@ -643,27 +659,10 @@ class App extends React.Component<any, any> {
   }
 
   public exportKey = async () => {
-    const { myModal, uri } = this.state;
+    const { myModal } = this.state;
     // const key: any = await this.post('http://127.0.0.1:3004/getPrivate', uri);
-    const result: any = await fetch('http://127.0.0.1:3004/getPrivate', {
-        method: 'post',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-        },
-        mode: 'no-cors',
-        body: "uri=" + encodeURIComponent(uri)
-    })
-    .then(data => {
-      console.log('data', data);
-      return data;
-    })
-    .catch(err => {
-      console.log();
-    })
-
-    const temp = await result.json();
-    console.log(temp);
-    
+    let res = await this.post('http://localhost:3004/getPrivate', 'wc:b24af3c7-0875-49a1-943d-d19b68b87a8c@1?bridge=https%3A%2F%2Fp.bridge.walletconnect.org&key=ec6a4a1577a431582b34e1fc0e29f261a00a8d6d6ed39b0110dcb1a67a811081')
+    console.log(res);
     // const result = await key.json();
     // console.log(result);
     this.setState({
