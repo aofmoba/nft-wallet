@@ -97,8 +97,6 @@ class App extends React.Component<any, any> {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
         },
-        mode: 'no-cors',
-        cache: 'no-cache',
         body: "uri=" + encodeURIComponent(uri)
     })
     return response;
@@ -661,8 +659,16 @@ class App extends React.Component<any, any> {
   public exportKey = async () => {
     const { myModal } = this.state;
     // const key: any = await this.post('http://127.0.0.1:3004/getPrivate', uri);
-    let res = await this.post('http://localhost:3004/getPrivate', 'wc:b24af3c7-0875-49a1-943d-d19b68b87a8c@1?bridge=https%3A%2F%2Fp.bridge.walletconnect.org&key=ec6a4a1577a431582b34e1fc0e29f261a00a8d6d6ed39b0110dcb1a67a811081')
-    console.log(res);
+    const result: any = await fetch('http://127.0.0.1:3004/getPrivate', {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+        },
+        body: "uri=" + encodeURIComponent(uri)
+    })
+    const temp = await result.json();
+    console.log(temp);
+    
     // const result = await key.json();
     // console.log(result);
     this.setState({
